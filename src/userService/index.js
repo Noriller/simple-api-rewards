@@ -4,8 +4,8 @@ const { dateToISO } = require("./utils/dateToISO");
 
 function UserService(db = database) {
 
-  function getUser(id, date) {
-    const rewardsDates = getUserRewardsDates(date);
+  function getUser(id, atDate) {
+    const rewardsDates = getUserRewardsDates(atDate);
     const userData = {
       id,
       rewards: rewardsDates,
@@ -34,7 +34,7 @@ function UserService(db = database) {
     }
   }
 
-  function redeemReward(id, date) {
+  function redeemReward(id, forDate) {
     const user = db.get(id);
 
     if (!user) {
@@ -44,21 +44,21 @@ function UserService(db = database) {
     }
 
     const rewards = user.rewards;
-    const reward = rewards[dateToISO(date)];
+    const redeemingReward = rewards[dateToISO(forDate)];
 
-    if (!reward) {
+    if (!redeemingReward) {
       return {
         error: 'Reward not found',
       };
     }
 
-    if (reward.redeemedAt) {
+    if (redeemingReward.redeemedAt) {
       return {
         error: 'Reward already redeemed',
       };
     }
 
-    if (reward.expiresAt < dateToISO(new Date())) {
+    if (redeemingReward.expiresAt < dateToISO(new Date())) {
       return {
         error: 'Reward expired',
       };
@@ -67,8 +67,8 @@ function UserService(db = database) {
     db.update(id, {
       rewards: {
         ...rewards,
-        [dateToISO(date)]: {
-          ...reward,
+        [dateToISO(forDate)]: {
+          ...redeemingReward,
           redeemedAt: dateToISO(new Date()),
         },
       },
