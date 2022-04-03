@@ -35,7 +35,7 @@ router.patch('/:userId/rewards/:rewardId/redeem', (req, res) => {
   const { data, error } = userService.redeemReward(userId, rewardId);
 
   if (error) {
-    return res.status(400).json({ error });
+    return res.status(400).json({ error: { message: error } });
   }
 
   return res.status(200).json({ data });

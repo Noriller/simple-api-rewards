@@ -91,21 +91,21 @@ describe('Rewards API', () => {
       it('should return error without fetching the rewards first', async () => {
         const response = await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
         expect(response.statusCode).toBe(400);
-        expect(response.body).toEqual({ error: "The user was not found" });
+        expect(response.body).toEqual({ error: { message: "The user was not found" } });
       });
 
       it('should return error if the reward is not found', async () => {
         await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
         const response = await request(app).patch('/users/user-id/rewards/2020-03-30T00:00:00Z/redeem');
         expect(response.statusCode).toBe(400);
-        expect(response.body).toEqual({ error: "This reward was not found" });
+        expect(response.body).toEqual({ error: { message: "This reward was not found" } });
       });
 
       it('should return error message to expired reward', async () => {
         await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
         const response = await request(app).patch('/users/user-id/rewards/2020-03-16T00:00:00Z/redeem');
         expect(response.statusCode).toBe(400);
-        expect(response.body).toEqual({ error: "This reward is already expired" });
+        expect(response.body).toEqual({ error: { message: "This reward is already expired" } });
       });
 
       it('should return error if reward was already redeemed', async () => {
@@ -113,7 +113,7 @@ describe('Rewards API', () => {
         await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
         const response = await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
         expect(response.statusCode).toBe(400);
-        expect(response.body).toEqual({ error: "This reward was already redeemed" });
+        expect(response.body).toEqual({ error: { message: "This reward was already redeemed" } });
       });
     });
   });
