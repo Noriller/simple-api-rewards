@@ -3,7 +3,7 @@
  */
 function Database() {
   const data = new Map();
-  data.set('hello', { data: 'world' });
+  setHello();
 
   function get(key) {
     if (key) {
@@ -38,12 +38,23 @@ function Database() {
     data.delete(key);
   }
 
+  function setHello() {
+    data.set('hello', { data: 'world' });
+  }
+
+  function clear() {
+    data.clear();
+    setHello();
+  }
+
   return {
     get,
     save,
     update,
     remove,
+    clear,
   };
 }
 
-module.exports = Database;
+// Node module exports make this a singleton.
+module.exports = Database();

@@ -1,13 +1,9 @@
 const http = require('http');
 const express = require('express');
 const routes = require("./routes/");
-const Database = require('./database/');
 
 const app = express();
 const port = process.env.PORT || 3456;
-
-// the database is instantiated here to be used on other places
-const database = Database();
 
 // routes were separated to be better readable
 routes(app);
@@ -33,7 +29,6 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 module.exports = server;
-exports.database = database;
 
 /**
  * The index basically just takes care of the starting and the closing of the server.

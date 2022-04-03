@@ -1,102 +1,57 @@
 const UserService = require('.');
-const Database = require('../database');
+const database = require('../database');
+const {
+  nowDate,
+  userDataOn19,
+  weekAfterDate,
+  redeemedReward,
+  nowDateISOString
+} = require("../__mocks__/rewardsMock");
 
 describe('UserService', () => {
   let userService;
-  let database;
-
-  const nowDateISOString = '2020-03-19T00:00:00Z';
-  const nowDate = new Date(nowDateISOString);
-  const weekAfterDate = new Date('2020-03-26T00:00:00Z');
-
-  const userDateOn19 = {
-    "id": "user-id",
-    "rewards": {
-      "2020-03-15T00:00:00Z": {
-        availableAt: "2020-03-15T00:00:00Z",
-        expiresAt: "2020-03-16T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-16T00:00:00Z": {
-        availableAt: "2020-03-16T00:00:00Z",
-        expiresAt: "2020-03-17T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-17T00:00:00Z": {
-        availableAt: "2020-03-17T00:00:00Z",
-        expiresAt: "2020-03-18T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-18T00:00:00Z": {
-        availableAt: "2020-03-18T00:00:00Z",
-        expiresAt: "2020-03-19T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-19T00:00:00Z": {
-        availableAt: "2020-03-19T00:00:00Z",
-        expiresAt: "2020-03-20T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-20T00:00:00Z": {
-        availableAt: "2020-03-20T00:00:00Z",
-        expiresAt: "2020-03-21T00:00:00Z",
-        redeemedAt: null
-      },
-      "2020-03-21T00:00:00Z": {
-        availableAt: "2020-03-21T00:00:00Z",
-        expiresAt: "2020-03-22T00:00:00Z",
-        redeemedAt: null
-      }
-    }
-  };
-
-  const redeemedReward = {
-    availableAt: '2020-03-19T00:00:00Z',
-    expiresAt: '2020-03-20T00:00:00Z',
-    redeemedAt: '2020-03-19T00:00:00Z'
-  };
 
   beforeEach(() => {
     jest
       .useFakeTimers()
       .setSystemTime(new Date('2020-03-19T00:00:00Z').getTime());
 
-    database = Database();
     userService = UserService(database);
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    database.clear();
   });
 
   describe('getUser', () => {
     it('should get user', () => {
       const user = userService.getUser('user-id', nowDate);
 
-      expect(user).toEqual(userDateOn19);
+      expect(user).toEqual(userDataOn19);
     });
 
     it('should get same user twice with dates within same week', () => {
       const user = userService.getUser('user-id', nowDate);
 
-      expect(user).toEqual(userDateOn19);
+      expect(user).toEqual(userDataOn19);
 
       const user2 = userService.getUser('user-id', new Date('2020-03-21T00:00:00Z'));
 
-      expect(user2).toEqual(userDateOn19);
+      expect(user2).toEqual(userDataOn19);
     });
 
     it('should get same user twice with dates a week apart', () => {
       const user = userService.getUser('user-id', nowDate);
 
-      expect(user).toEqual(userDateOn19);
+      expect(user).toEqual(userDataOn19);
 
       const user2 = userService.getUser('user-id', weekAfterDate);
 
       const userDateOn26 = {
-        ...userDateOn19,
+        ...userDataOn19,
         rewards: {
-          ...userDateOn19.rewards,
+          ...userDataOn19.rewards,
           "2020-03-22T00:00:00Z": {
             availableAt: "2020-03-22T00:00:00Z",
             expiresAt: "2020-03-23T00:00:00Z",

@@ -1,12 +1,13 @@
-const Database = require('./');
+const database = require('./');
 
 describe('Database', () => {
-  let database;
-
   beforeEach(() => {
-    database = Database();
     populateData();
   });
+
+  afterEach(() => {
+    database.clear();
+  })
 
   it('should get the data', () => {
     expect(database.get()).toEqual(

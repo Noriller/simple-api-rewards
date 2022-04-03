@@ -1,17 +1,17 @@
-const { database } = require('../index');
+const database = require('../database');
 const { getUserRewardsDates } = require('./utils/createRewards');
 const { dateToISO } = require("./utils/dateToISO");
 
 function UserService(db = database) {
 
   function getUser(id, atDate) {
-    const rewardsDates = getUserRewardsDates(atDate);
+    const rewardsDates = getUserRewardsDates(atDate); //?
     const userData = {
       id,
       rewards: rewardsDates,
     };
 
-    const user = db.get(id);
+    const user = db.get(id); //?
     if (!user) {
       db.save(id, userData);
       return userData;
