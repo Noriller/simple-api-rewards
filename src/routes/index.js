@@ -1,7 +1,11 @@
-function routes(app) {
-  app.get('/', (_, res) => res.status(200).send({ message: 'Hello World!' }));
+const users = require('./users.route')
 
-  app.get('*', (_, res) => res.status(404).send({ message: 'Error 404: Not Found' }));
+function routes(app) {
+  app.get('/', (_, res) => res.status(200).json({ message: 'Hello World!' }));
+
+  app.use('/users/:userId/rewards', users);
+
+  app.all('*', (_, res) => res.status(404).json({ message: 'Error 404: Not Found' }));
 }
 
 module.exports = routes;
