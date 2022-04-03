@@ -77,7 +77,7 @@ function UserService(db = database) {
     });
 
     return {
-      message: returnReward,
+      data: returnReward,
     };
   }
 

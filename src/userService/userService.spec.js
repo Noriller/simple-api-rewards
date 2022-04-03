@@ -3,10 +3,13 @@ const database = require('../database');
 const {
   nowDate,
   userDataOn19,
+  userDataOn26,
   weekAfterDate,
   redeemedReward,
   nowDateISOString
 } = require("../__mocks__/rewardsMock");
+
+
 
 describe('UserService', () => {
   let userService;
@@ -48,56 +51,14 @@ describe('UserService', () => {
 
       const user2 = userService.getUser('user-id', weekAfterDate);
 
-      const userDateOn26 = {
-        ...userDataOn19,
-        rewards: {
-          ...userDataOn19.rewards,
-          "2020-03-22T00:00:00Z": {
-            availableAt: "2020-03-22T00:00:00Z",
-            expiresAt: "2020-03-23T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-23T00:00:00Z": {
-            availableAt: "2020-03-23T00:00:00Z",
-            expiresAt: "2020-03-24T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-24T00:00:00Z": {
-            availableAt: "2020-03-24T00:00:00Z",
-            expiresAt: "2020-03-25T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-25T00:00:00Z": {
-            availableAt: "2020-03-25T00:00:00Z",
-            expiresAt: "2020-03-26T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-26T00:00:00Z": {
-            availableAt: "2020-03-26T00:00:00Z",
-            expiresAt: "2020-03-27T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-27T00:00:00Z": {
-            availableAt: "2020-03-27T00:00:00Z",
-            expiresAt: "2020-03-28T00:00:00Z",
-            redeemedAt: null
-          },
-          "2020-03-28T00:00:00Z": {
-            availableAt: "2020-03-28T00:00:00Z",
-            expiresAt: "2020-03-29T00:00:00Z",
-            redeemedAt: null
-          },
-        }
-      };
-
-      expect(user2).toEqual(userDateOn26);
+      expect(user2).toEqual(userDataOn26);
     });
 
     it('should update the redeemed getting a reward', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ message: redeemedReward });
+      expect(reward).toEqual({ data: redeemedReward });
 
       const user = userService.getUser('user-id', nowDate);
       expect(user.rewards[nowDateISOString]).toEqual(redeemedReward);
@@ -109,14 +70,14 @@ describe('UserService', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ message: redeemedReward });
+      expect(reward).toEqual({ data: redeemedReward });
     });
 
     it('should return error if reward was already redeemed', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ message: redeemedReward });
+      expect(reward).toEqual({ data: redeemedReward });
 
       const reward2 = userService.redeemReward('user-id', nowDate);
 

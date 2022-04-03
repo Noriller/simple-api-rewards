@@ -1,11 +1,12 @@
 const request = require('supertest');
+const database = require('./database');
 const app = require('./index');
 const {
-  nowDate,
   userDataOn19,
-  weekAfterDate,
+  userDataOn26,
   redeemedReward,
-  nowDateISOString
+  nowDateISOString,
+  weekAfterDateISOString,
 } = require("./__mocks__/rewardsMock");
 
 describe('Rewards API', () => {
@@ -30,12 +31,90 @@ describe('Rewards API', () => {
 
     afterEach(() => {
       jest.useRealTimers();
+
+      database.clear();
     });
 
-    it('should get a user', async () => {
-      const response = await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual({ data: userDataOn19.rewards });
+    describe('getUser', () => {
+      it('should get an user passing at date', async () => {
+        const response = await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({ data: userDataOn19.rewards });
+      });
+
+      it('should get an user without passing at date', async () => {
+        const response = await request(app).get('/users/user-id/rewards');
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({ data: userDataOn19.rewards });
+      });
+
+      it('should return an error if the date is invalid', async () => {
+        const response = await request(app).get('/users/user-id/rewards?at=invalid-date');
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({ "message": "Invalid date" });
+      });
+
+      it('should keep data between requests', async () => {
+        const response = await request(app).get(`/users/user-id/rewards?at=${nowDateISOString}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({ data: userDataOn19.rewards });
+
+        jest.advanceTimersByTime(1000);
+
+        const response2 = await request(app).get(`/users/user-id/rewards?at=${weekAfterDateISOString}`);
+        expect(response2.statusCode).toBe(200);
+        expect(response2.body).toEqual({ data: userDataOn26.rewards });
+      });
+
+      it('should update the data after redeeming a reward', async () => {
+        await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
+        const response = await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({
+          data: {
+            ...userDataOn19.rewards,
+            [nowDateISOString]: redeemedReward,
+          }
+        });
+      });
+    });
+
+    describe('redeemReward', () => {
+      it('should redeem a reward', async () => {
+        await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        const response = await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({ data: redeemedReward });
+      });
+
+      it('should return error without fetching the rewards first', async () => {
+        const response = await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({ error: "The user was not found" });
+      });
+
+      it('should return error if the reward is not found', async () => {
+        await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        const response = await request(app).patch('/users/user-id/rewards/2020-03-30T00:00:00Z/redeem');
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({ error: "This reward was not found" });
+      });
+
+      it('should return error message to expired reward', async () => {
+        await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        const response = await request(app).patch('/users/user-id/rewards/2020-03-16T00:00:00Z/redeem');
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({ error: "This reward is already expired" });
+      });
+
+      it('should return error if reward was already redeemed', async () => {
+        await request(app).get('/users/user-id/rewards?at=2020-03-20T00:00:00Z');
+        await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
+        const response = await request(app).patch('/users/user-id/rewards/2020-03-19T00:00:00Z/redeem');
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toEqual({ error: "This reward was already redeemed" });
+      });
     });
   });
 });
