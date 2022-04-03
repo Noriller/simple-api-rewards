@@ -50,6 +50,12 @@ describe('UserService', () => {
     }
   };
 
+  const redeemedReward = {
+    availableAt: '2020-03-19T00:00:00Z',
+    expiresAt: '2020-03-20T00:00:00Z',
+    redeemedAt: '2020-03-19T00:00:00Z'
+  };
+
   beforeEach(() => {
     jest
       .useFakeTimers()
@@ -136,14 +142,10 @@ describe('UserService', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ "message": "Reward redeemed" });
+      expect(reward).toEqual({ message: redeemedReward });
 
       const user = userService.getUser('user-id', nowDate);
-      expect(user.rewards[nowDateISOString]).toEqual({
-        availableAt: "2020-03-19T00:00:00Z",
-        expiresAt: "2020-03-20T00:00:00Z",
-        redeemedAt: "2020-03-19T00:00:00Z"
-      });
+      expect(user.rewards[nowDateISOString]).toEqual(redeemedReward);
     });
   });
 
@@ -152,38 +154,38 @@ describe('UserService', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ "message": "Reward redeemed" });
+      expect(reward).toEqual({ message: redeemedReward });
     });
 
     it('should return error if reward was already redeemed', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ "message": "Reward redeemed" });
+      expect(reward).toEqual({ message: redeemedReward });
 
       const reward2 = userService.redeemReward('user-id', nowDate);
 
-      expect(reward2).toEqual({ "error": "Reward already redeemed" });
+      expect(reward2).toEqual({ "error": "This reward was already redeemed" });
     });
 
     it('should return error if reward is not available', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', weekAfterDate);
 
-      expect(reward).toEqual({ "error": "Reward not found" });
+      expect(reward).toEqual({ "error": "This reward was not found" });
     });
 
     it('should return error if user does not exist', () => {
       const reward = userService.redeemReward('user-id', nowDate);
 
-      expect(reward).toEqual({ "error": "User not found" });
+      expect(reward).toEqual({ "error": "The user was not found" });
     });
 
     it('should return error if its expired', () => {
       userService.getUser('user-id', nowDate);
       const reward = userService.redeemReward('user-id', '2020-03-16T00:00:00Z');
 
-      expect(reward).toEqual({ "error": "Reward expired" });
+      expect(reward).toEqual({ "error": "This reward is already expired" });
     });
   });
 });

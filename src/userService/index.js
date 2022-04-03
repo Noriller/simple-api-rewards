@@ -39,7 +39,7 @@ function UserService(db = database) {
 
     if (!user) {
       return {
-        error: 'User not found',
+        error: 'The user was not found',
       };
     }
 
@@ -48,34 +48,36 @@ function UserService(db = database) {
 
     if (!redeemingReward) {
       return {
-        error: 'Reward not found',
+        error: 'This reward was not found',
       };
     }
 
     if (redeemingReward.redeemedAt) {
       return {
-        error: 'Reward already redeemed',
+        error: 'This reward was already redeemed',
       };
     }
 
     if (redeemingReward.expiresAt < dateToISO(new Date())) {
       return {
-        error: 'Reward expired',
+        error: 'This reward is already expired',
       };
     }
+
+    const returnReward = {
+      ...redeemingReward,
+      redeemedAt: dateToISO(new Date())
+    };
 
     db.update(id, {
       rewards: {
         ...rewards,
-        [dateToISO(forDate)]: {
-          ...redeemingReward,
-          redeemedAt: dateToISO(new Date()),
-        },
+        [dateToISO(forDate)]: returnReward,
       },
     });
 
     return {
-      message: 'Reward redeemed',
+      message: returnReward,
     };
   }
 
