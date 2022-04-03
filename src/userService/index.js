@@ -2,7 +2,8 @@ const { database } = require('../index');
 const { getUserRewardsDates } = require('./utils/createRewards');
 const { dateToISO } = require("./utils/dateToISO");
 
-function UserService(instantiatedDB = database) {
+function UserService(db = database) {
+
   function getUser(id, date) {
     const rewardsDates = getUserRewardsDates(date);
     const userData = {
@@ -10,11 +11,11 @@ function UserService(instantiatedDB = database) {
       rewards: rewardsDates,
     };
 
-    if (!instantiatedDB.get(id)) {
-      instantiatedDB.set(id, userData);
+    const user = db.get(id);
+    if (!user) {
+      db.save(id, userData);
       return userData;
     } else {
-      const user = instantiatedDB.get(id);
       const userRewards = {
         // the newly created comes first
         ...rewardsDates,
@@ -22,7 +23,7 @@ function UserService(instantiatedDB = database) {
         ...user.rewards,
       };
 
-      instantiatedDB.update(id, {
+      db.update(id, {
         rewards: userRewards,
       });
 
@@ -34,7 +35,7 @@ function UserService(instantiatedDB = database) {
   }
 
   function redeemReward(id, date) {
-    const user = instantiatedDB.get(id);
+    const user = db.get(id);
 
     if (!user) {
       return {
@@ -63,7 +64,7 @@ function UserService(instantiatedDB = database) {
       };
     }
 
-    instantiatedDB.update(id, {
+    db.update(id, {
       rewards: {
         ...rewards,
         [dateToISO(date)]: {
@@ -83,3 +84,5 @@ function UserService(instantiatedDB = database) {
     redeemReward,
   };
 }
+
+module.exports = UserService;
